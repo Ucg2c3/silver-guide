@@ -1,0 +1,28 @@
+// handle Bing search request resultsfunction handleBingResponse() {   
+hideDivs("noresults");    var json = this.responseText.trim();   
+var jsobj = {};    // try to parse JSON results   
+try {        if (json.length) jsobj = JSON.parse(json);   
+} catch(e) {        renderErrorMessage("Invalid JSON response");    }    
+// show raw JSON and HTTP request   
+showDiv("json", 
+preFormat(JSON.stringify(jsobj, null, 2)));   
+showDiv("http", preFormat("GET " + this.responseURL + "\n\nStatus: " + this.status + " " +         
+this.statusText + "\n" + this.getAllResponseHeaders()));   
+// if HTTP response is 200 OK, try to render search results    
+if (this.status === 200) {        var clientid = this.getResponseHeader("X-MSEdge-ClientID");      
+if (clientid) retrieveValue(CLIENT_ID_COOKIE, clientid);       
+if (json.length) {            if (jsobj._type === "SearchResponse") {              
+renderSearchResults(jsobj);            } else {               
+renderErrorMessage("No search results in JSON response");            }        } else {   
+renderErrorMessage("Empty response (are you sending too many requests too quickly?)");      
+}    if (divHidden("pole") && divHidden("mainline") && divHidden("sidebar"))        
+showDiv("noresults", "No results.<p><small>Looking for restaurants or other local businesses? 
+Those currently areen't supported outside the US.</small>");    }    
+// Any other HTTP status is an error    else {       
+// 401 is unauthorized; force re-prompt for API key for next request       
+if (this.status === 401) invalidateSearchKey();        // some error responses don't have a top-level errors object, 
+so gin one up        var errors = jsobj.errors || [jsobj];        var errmsg = [];        
+// display HTTP status code        errmsg.push("HTTP Status " + this.status + " " + this.statusText + "\n");        // add all fields from all error responses     
+for (var i = 0; i < errors.length; i++) {            if (i) errmsg.push("\n");        
+for (var k in errors[i]) errmsg.push(k + ": " + errors[i][k]);        }        // also display Bing Trace ID if it isn't blocked by CORS        var traceid = this.getResponseHeader("BingAPIs-TraceId");      
+if (traceid) errmsg.push("\nTrace ID " + traceid);        // and display the error message        renderErrorMessage(errmsg.join("\n"));    }}
