@@ -1,0 +1,133 @@
+Improving the UI/UX
+Use Material-UI for sleek components:
+
+shell
+
+Copy
+npm install @mui/material @emotion/react @emotion/styled
+Update the search component with Material-UI (src/components/Search.js):
+
+javascript
+
+Copy
+import React, { useState, useEffect } from 'react';
+import API from '../api';
+import { TextField, Button, List, ListItem, ListItemText, Box } from '@mui/material';
+
+const Search = () => {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+
+    const handleSearch = async () => {
+        const data = await API.get(`/search?q=${query}`);
+        if (data) setResults(data.webPages.value);
+    };
+
+    const fetchSuggestions = async (q) => {
+        const data = await API.get(`/suggest?q=${q}`);
+        if (data) setSuggestions(data.suggestionGroups[0].searchSuggestions);
+    };
+
+    useEffect(() => {
+        if (query.length > 2) {
+            fetchSuggestions(query);
+        } else {
+            setSuggestions([]);
+        }
+    }, [query]);
+
+    return (
+        <Box sx={{ padding: 2, textAlign: 'center' }}>
+            <TextField
+                label="Search"
+                variant="outlined"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                fullWidth
+            />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSearch}
+                sx={{ marginTop: 2 }}
+            >
+                Search
+            </Button>
+            <List>
+                {suggestions.map((suggestion, index) => (
+                    <ListItem key={index}>
+                        <ListItemText primary={suggestion.displayText} />
+                    </ListItem>
+                ))}
+            </List>
+            <List>
+                {results.map((result) => (
+                    <ListItem key={result.id}>
+                        <ListItemText primary={result.name} secondary={result.url} />
+                    </ListItem>
+                ))}
+            </List>
+        </Box>
+    );
+};
+
+export default Search;
+Enhance navigation with React Router:
+
+shell
+
+Copy
+npm install react-router-dom
+Set up routes for different pages (src/App.js):
+
+javascript
+
+Copy
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Search from './components/Search';
+import Profile from './components/Profile';
+import Analytics from './components/Analytics';
+
+const App = () => {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<Search />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/analytics" element={<Analytics />} />
+            </Routes>
+        </Router>
+    );
+};
+
+export default App;
+Create user profile and analytics components (src/components/Profile.js and src/components/Analytics.js):
+
+javascript
+
+Copy
+import React from 'react';
+
+const Profile = () => {
+    return (
+        <div>
+            <h2>User Profile</h2>
+            {/* Add profile details here */}
+        </div>
+    );
+};
+
+export default Profile;
+
+const Analytics = () => {
+    return (
+        <div>
+            <h2>Analytics Dashboard</h2>
+            {/* Add analytics charts and data here */}
+        </div>
+    );
+};
+
+export default Analytics
