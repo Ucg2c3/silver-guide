@@ -501,3 +501,137 @@ const App = () => (
 );
 
 export default App;
+Ensure All Dependencies Are Installed:
+
+shell
+
+Copy
+npm install @mui/material @emotion/react @emotion/styled react-router-dom axios
+Complete the React App (src/App.js):
+
+javascript
+
+Copy
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Search from './components/Search';
+import Profile from './components/Profile';
+import Analytics from './components/Analytics';
+import { AppBar, Toolbar, Button } from '@mui/material';
+
+const App = () => (
+    <Router>
+        <AppBar position="static">
+            <Toolbar>
+                <Button color="inherit" component={Link} to="/">
+                    Search
+                </Button>
+                <Button color="inherit" component={Link} to="/profile">
+                    Profile
+                </Button>
+                <Button color="inherit" component={Link} to="/analytics">
+                    Analytics
+                </Button>
+            </Toolbar>
+        </AppBar>
+        <Routes>
+            <Route path="/" element={<Search />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/analytics" element={<Analytics />} />
+        </Routes>
+    </Router>
+);
+
+export default App;
+Enhance the Search Component (src/components/Search.js):
+
+javascript
+
+Copy
+import React, { useState, useEffect } from 'react';
+import API from '../api';
+import { TextField, Button, List, ListItem, ListItemText, Box, Typography, Container } from '@mui/material';
+
+const Search = () => {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+
+    const handleSearch = async () => {
+        const data = await API.get(`/search?q=${query}`);
+        if (data) setResults(data.webPages.value);
+    };
+
+    const fetchSuggestions = async (q) => {
+        const data = await API.get(`/suggest?q=${q}`);
+        if (data) setSuggestions(data.suggestionGroups[0].searchSuggestions);
+    };
+
+    useEffect(() => {
+        if (query.length > 2) {
+            fetchSuggestions(query);
+        } else {
+            setSuggestions([]);
+        }
+    }, [query]);
+
+    return (
+        <Container>
+            <Typography variant="h1" gutterBottom>
+                Search Visualizer
+            </Typography>
+            <TextField
+                label="Search"
+                variant="outlined"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                fullWidth
+                margin="normal"
+            />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSearch}
+                sx={{ marginTop: 2 }}
+            >
+                Search
+            </Button>
+            <Box mt={2}>
+                <Typography variant="h6">Suggestions:</Typography>
+                <List>
+                    {suggestions.map((suggestion, index) => (
+                        <ListItem key={index}>
+                            <ListItemText primary={suggestion.displayText} />
+                        </ListItem>
+                    ))}
+                </List>
+            </Box>
+            <Box mt={2}>
+                <Typography variant="h6">Results:</Typography>
+                <List>
+                    {results.map((result) => (
+                        <ListItem key={result.id}>
+                            <ListItemText
+                                primary={result.name}
+                                secondary={result.url}
+                            />
+                        </ListItem>
+                    ))}
+                </List>
+            </Box>
+        </Container>
+    );
+};
+
+export default Search;
+Add User Profile and Analytics Components (src/components/Profile.js and src/components/Analytics.js):
+
+javascript
+
+Copy
+import React from 'react';
+
+const Profile = () => {
+    return (
+        <Container>
+            <Typography variant="h2">User Profile</Typography>
