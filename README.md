@@ -352,3 +352,152 @@ const Analytics = () => {
 };
 
 export default Analytics
+Styling with Material-UI:
+Customize Theme: Define a theme to ensure consistent styling.
+
+javascript
+
+Copy
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#1976d2',
+        },
+        secondary: {
+            main: '#dc004e',
+        },
+    },
+    typography: {
+        h1: {
+            fontSize: '2rem',
+        },
+        button: {
+            textTransform: 'none',
+        },
+    },
+});
+
+const App = () => (
+    <ThemeProvider theme={theme}>
+        {/* Your components */}
+    </ThemeProvider>
+);
+Make Components More Elegant: Update src/components/Search.js with Material-UI components for a polished look:
+
+javascript
+
+Copy
+import React, { useState, useEffect } from 'react';
+import API from '../api';
+import { TextField, Button, List, ListItem, ListItemText, Box, Typography, Container } from '@mui/material';
+
+const Search = () => {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+
+    const handleSearch = async () => {
+        const data = await API.get(`/search?q=${query}`);
+        if (data) setResults(data.webPages.value);
+    };
+
+    const fetchSuggestions = async (q) => {
+        const data = await API.get(`/suggest?q=${q}`);
+        if (data) setSuggestions(data.suggestionGroups[0].searchSuggestions);
+    };
+
+    useEffect(() => {
+        if (query.length > 2) {
+            fetchSuggestions(query);
+        } else {
+            setSuggestions([]);
+        }
+    }, [query]);
+
+    return (
+        <Container>
+            <Typography variant="h1" gutterBottom>
+                Search Visualizer
+            </Typography>
+            <TextField
+                label="Search"
+                variant="outlined"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                fullWidth
+                margin="normal"
+            />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSearch}
+                sx={{ marginTop: 2 }}
+            >
+                Search
+            </Button>
+            <Box mt={2}>
+                <Typography variant="h6">Suggestions:</Typography>
+                <List>
+                    {suggestions.map((suggestion, index) => (
+                        <ListItem key={index}>
+                            <ListItemText primary={suggestion.displayText} />
+                        </ListItem>
+                    ))}
+                </List>
+            </Box>
+            <Box mt={2}>
+                <Typography variant="h6">Results:</Typography>
+                <List>
+                    {results.map((result) => (
+                        <ListItem key={result.id}>
+                            <ListItemText
+                                primary={result.name}
+                                secondary={result.url}
+                            />
+                        </ListItem>
+                    ))}
+                </List>
+            </Box>
+        </Container>
+    );
+};
+
+export default Search;
+Polish Navigation: Ensure a smooth user experience with src/App.js:
+
+javascript
+
+Copy
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Search from './components/Search';
+import Profile from './components/Profile';
+import Analytics from './components/Analytics';
+import { AppBar, Toolbar, Button } from '@mui/material';
+
+const App = () => (
+    <Router>
+        <AppBar position="static">
+            <Toolbar>
+                <Button color="inherit" component={Link} to="/">
+                    Search
+                </Button>
+                <Button color="inherit" component={Link} to="/profile">
+                    Profile
+                </Button>
+                <Button color="inherit" component={Link} to="/analytics">
+                    Analytics
+                </Button>
+            </Toolbar>
+        </AppBar>
+        <Routes>
+            <Route path="/" element={<Search />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/analytics" element={<Analytics />} />
+        </Routes>
+    </Router>
+);
+
+export default App;
